@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::apiResource("products", \App\Http\Controllers\ProductApiController::class);
-Route::apiResource("photos", \App\Http\Controllers\PhotoApiController::class);
+Route::post("register", [\App\Http\Controllers\AuthApiController::class,"register"])->name("api.register");
+Route::post("login", [\App\Http\Controllers\AuthApiController::class, "login"])->name("api.login");
+
+Route::middleware("auth:sanctum")->group(function(){
+    Route::post("logout", [\App\Http\Controllers\AuthApiController::class,"logout"])->name("api.logout");
+    Route::post("logout-all", [\App\Http\Controllers\AuthApiController::class, "logoutAll"])->name("api.logoutAll");
+    Route::get("tokens", [\App\Http\Controllers\AuthApiController::class, "tokens"])->name("api.tokens");
+    Route::apiResource("products", \App\Http\Controllers\ProductApiController::class);
+    Route::apiResource("photos", \App\Http\Controllers\PhotoApiController::class);
+});
 
