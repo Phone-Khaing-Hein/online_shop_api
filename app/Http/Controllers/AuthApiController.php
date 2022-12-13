@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,12 +24,12 @@ class AuthApiController extends Controller
             "password"=>Hash::make($request->password)
         ]);
 
-        if(Auth::attempt($request->only(["email","password"]))){
-            $token=Auth::user()->createToken("phone")->plainTextToken;
-            return response()->json($token);
-        }
+//        if(Auth::attempt($request->only(["email","password"]))){
+//            $token=Auth::user()->createToken("phone")->plainTextToken;
+//            return response()->json($token);
+//        }
 
-        return response()->json(["Login Fail!"], 401);
+        return response()->json(["message"=>"User created!", "success" => true], 200);
     }
 
     public function login(Request $request){
@@ -39,13 +40,25 @@ class AuthApiController extends Controller
 
         if(Auth::attempt($request->only(["email","password"]))){
             $token=Auth::user()->createToken("phone")->plainTextToken;
-            return response()->json($token);
+            return response()->json([
+                "message"=>"Login successfully!",
+                "success" => true,
+                "token" => $token,
+                "auth" => new UserResource(Auth::user())
+            ], 200);
         }
+
+        return response()->json(["message"=>"Login fail!"], 401);
     }
 
     public function logout(){
         Auth::user()->currentAccessToken()->delete();
-        return response()->json(["logout successfully"], 204);
+//        return response()->json(["logout successfully"], 204);
+
+        return response()->json([
+            "message"=>"Logout successfully!",
+            "success" => true
+        ], 200);
     }
 
     public function logoutAll(){

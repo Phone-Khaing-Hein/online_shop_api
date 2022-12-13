@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResoucre;
 use App\Models\Photo;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -16,8 +17,13 @@ class ProductApiController extends Controller
      */
     public function index()
     {
-        $products = Product::latest("id")->paginate(10);
-        return response()->json($products);
+        $products = Product::when(request("keyword"), fn($q)=>$q->where("name", "like", "%".request("keyword")."%"))
+                    ->latest("id")
+                    ->paginate(5)
+                    ->withQueryString()
+                    ->onEachSide(1);
+//        return response()->json($products);
+        return ProductResoucre::collection($products);
     }
 
     /**
@@ -28,6 +34,7 @@ class ProductApiController extends Controller
      */
     public function store(Request $request)
     {
+//        sleep(5);
         $request->validate([
             "name"=>"required|min:3|max:50",
             "price"=>"required|numeric|min:1",
@@ -51,7 +58,11 @@ class ProductApiController extends Controller
 
         $product->photos()->saveMany($photos);
 
-        return response()->json($product);
+        return response()->json([
+            "success" => true,
+            "message" => "Product created successfully!",
+            "product" => new ProductResoucre($product)
+        ]);
     }
 
     /**
@@ -67,7 +78,8 @@ class ProductApiController extends Controller
             return response()->json(["message"=>"Product Not Found!"], 404);
         }
 
-        return response()->json($product);
+//        return response()->json($product);
+        return new ProductResoucre($product);
     }
 
     /**
@@ -101,7 +113,11 @@ class ProductApiController extends Controller
         }
         $product->update();
 
-        return response()->json($product);
+        return response()->json([
+            "success" => true,
+            "message" => "Product updated successfully!",
+            "product" => new ProductResoucre($product)
+        ]);
     }
 
     /**
@@ -117,6 +133,6 @@ class ProductApiController extends Controller
             return response()->json(["message"=>"Product Not Found!"], 404);
         }
         $product->delete();
-        return response()->json([], 204);
+        return response()->json(["message"=>"Product deleted successfully!"]);
     }
 }
