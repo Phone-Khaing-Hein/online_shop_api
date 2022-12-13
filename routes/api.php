@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix("v1")->group(function(){
+Route::middleware(['cors'])->prefix("v1")->group(function(){
     Route::post("register", [\App\Http\Controllers\AuthApiController::class,"register"])->name("api.register");
     Route::post("login", [\App\Http\Controllers\AuthApiController::class, "login"])->name("api.login");
 
